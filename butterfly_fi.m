@@ -1,5 +1,5 @@
-function [apbw_re, apbw_im, ambw_re, ambw_im] = ...
-    butterfly_fi(a_re, a_im, b_re, b_im, w_re, w_im)
+function [apbw_re, apbw_im, ambw_re, ambw_im, oflow] = ...
+    butterfly_fi(a_re, a_im, b_re, b_im, w_re, w_im, shift)
 % radix-2 butterfly
 % [apbw_re, apbw_im, ambw_re, ambw_im] = ...
 %     butterfly_fi(a_re, a_im, b_re, b_im, w_re, w_im)
@@ -22,11 +22,23 @@ apbw_im_unrounded = bw_im_rounded + a_im;
 ambw_re_unrounded = a_re - bw_re_rounded;
 ambw_im_unrounded = a_im - bw_im_rounded;
 
+oflow = 0;
+if (apbw_re_unrounded >= 1) || (apbw_re_unrounded < -1)
+    oflow = 1;
+elseif (apbw_im_unrounded >= 1) || (apbw_im_unrounded < -1)
+    oflow = 1;
+elseif (ambw_re_unrounded >= 1) || (ambw_re_unrounded < -1)
+    oflow = 1;
+elseif (ambw_im_unrounded >= 1) || (ambw_im_unrounded < -1)
+    oflow = 1;
+end
+    
 out_quantizer = fixed.Quantizer('WordLength', 18, 'FractionLength', 17, ...
     'RoundingMethod', 'round', 'OverflowAction', 'saturate');
 apbw_re = quantize(out_quantizer, apbw_re_unrounded);
 apbw_im = quantize(out_quantizer, apbw_im_unrounded);
 ambw_re = quantize(out_quantizer, ambw_re_unrounded);
 ambw_im = quantize(out_quantizer, ambw_im_unrounded);
+
 
 end
