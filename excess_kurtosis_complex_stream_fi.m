@@ -135,19 +135,19 @@ abs_m_x_sq_rounded = round_inf_and_saturate_fi('', abs_m_x_sq, fi_dtype(1, 25, 2
 d_unsc = abs_x_sq_acc_rounded * abs_m_x_sq_rounded;
 d = scale_fi('', d_unsc, 2); % 1e-18 unrounded error
 
-
-e = square_35x25_fi('', abs_m_x_sq, 5); % TODO fewer integer bits?!
-
-% e = abs_m_x_sq_rounded * abs_m_x_sq_rounded; % 1e-24 unrounded error
+e = square_35x25_fi('', abs_m_x_sq, 3); 
 f = scale_fi('', e, 2); % 1e-24 unrounded error
 
-fourth_abs_moment = scale_fi('', (a - b) + (c + d), -acc_len) + (e - f);
+a_rounded = round_inf_and_saturate_fi('', a, fi_dtype(1, a.WordLength, a.FractionLength-3));
+fourth_abs_moment = scale_fi('', (a_rounded - b) + (c + d), -acc_len) + (e - f);
 
 x = double(x_re_fi) + 1j*double(x_im_fi);
 m_x = mean(x);
 z = x - m_x;
 E_abs_z_4 = mean((abs(z)).^4);
-fourth_abs_moment_error = E_abs_z_4 - fourth_abs_moment
+if verbose
+    fourth_abs_moment_error = E_abs_z_4 - fourth_abs_moment
+end
 
 
 a_fl = sum(abs(x).^4);
@@ -160,17 +160,16 @@ f_fl = 4*abs(m_x)^4;
 fourth_abs_moment_fl = (2^-acc_len)*(a_fl - b_fl + c_fl + d_fl) + (e_fl - f_fl);
 
 if verbose
-
     fourth_abs_moment_error_fl = E_abs_z_4 - fourth_abs_moment_fl
 end
 
 if verbose
-    fprintf('a_error\n', a_fl - double(a));
-    fprintf('b_error\n', b_fl - double(b));
-    fprintf('c_error\n', c_fl - double(c));
-    fprintf('d_error\n', d_fl - double(d));
-    fprintf('e_error\n', e_fl - double(e));
-    fprintf('f_error\n', f_fl - double(f));
+    fprintf('a_error %g\n', a_fl - double(a));
+    fprintf('b_error %g\n', b_fl - double(b));
+    fprintf('c_error %g\n', c_fl - double(c));
+    fprintf('d_error %g\n', d_fl - double(d));
+    fprintf('e_error %g\n', e_fl - double(e));
+    fprintf('f_error %g\n', f_fl - double(f));
 end
 
 % second abs moment
@@ -179,22 +178,24 @@ mean_power = scale_fi('', sum_power, -acc_len);
 
 second_abs_moment = mean_power - abs_m_x_sq;
 second_abs_moment_sq = square_35x25_fi('', second_abs_moment, 5);
-% second_abs_moment_25bit = round_inf_and_saturate_fi('', second_abs_moment, fi_dtype(1, 25, 20));
-% second_abs_moment_35bit = round_inf_and_saturate_fi('', second_abs_moment, fi_dtype(1, 35, 30));
-% second_abs_moment_sq = second_abs_moment_35bit * second_abs_moment_25bit;
 second_abs_moment_sq_fl = (mean(abs(x).^2) - abs(m_x).^2).^2;
-second_moment_sq_error = second_abs_moment_sq - second_abs_moment_sq_fl
-
+second_moment_sq_error = second_abs_moment_sq - second_abs_moment_sq_fl;
+if verbose
+	fprintf('Second moment square error: %g\n', second_moment_sq_error)
+end
 
 % third term
-m_x_sq_re_rounded2 = round_inf_and_saturate_fi('', m_x_sq_re, fi_dtype(1, 34, 31));
-m_x_sq_im_rounded2 = round_inf_and_saturate_fi('', m_x_sq_im, fi_dtype(1, 34, 31));
+m_x_sq_re_rounded2 = round_inf_and_saturate_fi('', m_x_sq_re, fi_dtype(1, 35, 32));
+m_x_sq_im_rounded2 = round_inf_and_saturate_fi('', m_x_sq_im, fi_dtype(1, 35, 32));
 third_term_sqrt_re = scale_fi('', x_sq_acc_re_rounded, -acc_len) - m_x_sq_re_rounded2;
 third_term_sqrt_im = scale_fi('', x_sq_acc_im_rounded, -acc_len) - m_x_sq_im_rounded2;
 third_term = third_term_sqrt_re*third_term_sqrt_re + third_term_sqrt_im*third_term_sqrt_im;
 m_x = mean(x);
 third_term_fl = abs( mean(x.^2) - m_x.^2 ).^2;
-third_term_error = third_term_fl - third_term
+third_term_error = third_term_fl - third_term;
+if verbose
+	fprintf('Third term error: %g\n', third_term_error)
+end
 
 kurtosis_num = double(fourth_abs_moment - third_term);
 kappa_x = kurtosis_num/double(second_abs_moment_sq) - 2;
