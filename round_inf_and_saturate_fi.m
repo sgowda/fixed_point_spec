@@ -5,5 +5,6 @@ quantizer = fixed.Quantizer('WordLength', dtype.WordLength, ...
     'RoundingMethod', 'round', 'OverflowAction', 'saturate');
 
 x_rounded = quantize(quantizer, x);
+log_rounding(name, double(x_rounded) - double(x));
 
 end
