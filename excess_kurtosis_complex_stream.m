@@ -15,6 +15,12 @@ function [kappa_x, kurtosis_num, kurtosis_den] = excess_kurtosis_complex_stream(
 %       kappa_x     =   biased sample excess kurtosis of the vector x
 %
 
+
+x_re_fi = real(x);
+x_im_fi = imag(x);
+[x_re_fi, x_im_fi, x_sq_re, x_sq_im, abs_x_sq, abs_x_4th, x_3rd_re, ...
+    x_3rd_im] = kurtosis_origin_moments_float(x_re_fi, x_im_fi);
+
 % fourth abs moment
 acc_len = log2(length(x));
 
