@@ -28,4 +28,15 @@ for line in file:
     op = (block, orig_bitwidth, new_bitwidth)
     rounding_loss[op].append(loss)
 
+# separate rounding loss into 25bit keys and 35bit keys
+keys_25bit = filter(lambda x: x[2] == 25, rounding_loss.keys())
+keys_35bit = filter(lambda x: x[2] == 35, rounding_loss.keys())
 
+def extract_loss(keys):
+    loss = []
+    for key in keys:
+        loss += rounding_loss[key]
+    return loss
+
+loss_25bit = extract_loss(keys_25bit)
+loss_35bit = extract_loss(keys_35bit)
